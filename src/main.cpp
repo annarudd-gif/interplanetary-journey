@@ -41,7 +41,9 @@ while (const auto event = win.pollEvent()) {
 }
 
 int main() /*самий початок, назва та версія гри*/{
-    std::cout << "Interplanetary Journey v2.0.0" << std::endl;
+
+
+    std::cout << "Interplanetary Journey" << std::endl;
     
 /*Стан екрану*/
     Screen currentScreen=Screen::Menu;
@@ -61,7 +63,7 @@ int main() /*самий початок, назва та версія гри*/{
     sf::Clock clock;
     float dt;
     Menu menu(font,winX);
-    Game game (winX,winY);
+    Game game (mainWindow, font,dt);
     
    
 
@@ -80,9 +82,9 @@ if(currentScreen==Screen::Menu){
     mainWindow.display();}
 /*Налаштування позицій та малювання наповнення вікна для гри*/
 else if(currentScreen==Screen::Game){
-    game.update(dt);
+    game.update();
     mainWindow.clear(sf::Color(10,20,50));
-    game.draw(mainWindow);
+    game.draw();
     mainWindow.display();}
 /*Налаштування позицій та малювання наповнення вікна для налаштувань*/
 else if(currentScreen==Screen::Settings){
