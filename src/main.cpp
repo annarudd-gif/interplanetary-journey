@@ -49,7 +49,7 @@ int main() /*самий початок, назва та версія гри*/{
     Screen currentScreen=Screen::Menu;
 /*Завантаження та перевірка шрифтів*/
     sf::Font font;
-    if(!font.openFromFile("project/assets/fonts/Strogo-Regular.ttf")){
+    if(!font.openFromFile("assets/fonts/Strogo-Regular.ttf")){
         std::cerr<<"Error loading font"<<std::endl;
     }
 /*Створення головного вікна*/

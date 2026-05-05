@@ -5,10 +5,10 @@
   
       
     Rocket::Rocket(float startX, float startY){
-        if(!rocketTexture.loadFromFile("project/assets/textures/rocket.png")){
+        if(!rocketTexture.loadFromFile("assets/textures/rocket.png")){
             std::cout<<"<Failed to load rocket texture\n";
         }
-        if(!rocketFlamesTexture.loadFromFile("project/assets/textures/rocketWithFlames.png")){
+        if(!rocketFlamesTexture.loadFromFile("assets/textures/rocketWithFlames.png")){
             std::cout<<"<Failed to load rocketWithFlames texture\n";
         }
         rocketSprite.emplace(rocketTexture);
@@ -49,7 +49,7 @@
         if(rocketSprite){win.draw(*rocketSprite);}
         
     }
-    void Rocket::update(float dt){
+    void Rocket::update(float dt, float worldHeight){
         if(Up){
             angle-=rotationSpeed*dt;
         }
@@ -141,6 +141,11 @@
         
         rocket.setRotation(sf::degrees(angle));
         rocket.move({(direction.x*totalSpeed)*dt, (direction.y*totalSpeed)*dt});
+
+        sf::Vector2f pos=rocket.getPosition();
+        float halfHeight=rocket.getGlobalBounds().size.y/2.f;
+        pos.y=std::clamp(pos.y,halfHeight,worldHeight-halfHeight);
+        rocket.setPosition(pos);
         (*rocketSprite).setPosition(rocket.getPosition());
         (*rocketSprite).setRotation(rocket.getRotation());
         
@@ -182,6 +187,10 @@
         }
         else{overheatTime=0.f;
         return false;}
+    }
+    sf::Vector2f Rocket::getRocketPoint(int num){
+        if(num>=rocket.getPointCount()){return rocket.getPosition();}
+        return rocket.getTransform().transformPoint(rocket.getPoint(num));
     }
 
  

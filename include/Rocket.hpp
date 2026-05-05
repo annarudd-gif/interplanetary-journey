@@ -42,12 +42,13 @@ struct Rocket{
     Rocket(float startX, float startY);
     void draw(sf::RenderWindow& win);
     float rad(float angle);
-    void update(float dt);
+    void update(float dt, float worldHeight);
     std::string getEngineCondition();
     sf::Vector2f getPosition();
     float getSpeed();
     bool hasCooldownExpired(float& dt);
     bool updateOverheatTimer(float& dt);
+    sf::Vector2f getRocketPoint(int num);
 
   
 };

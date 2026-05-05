@@ -3,6 +3,9 @@
 #include "Screen.hpp"
 #include "Rocket.hpp"
 #include <string>
+#include "Asteroid.hpp"
+
+
 
 struct RocketStats {
     float speed;
@@ -22,6 +25,7 @@ struct RocketHud {
 
 class Game {
 private:
+    std::vector<Asteroid> asteroids;
     float time;
     float& dt;
     sf::Font& font;
@@ -31,6 +35,9 @@ private:
     sf::Shader starShader;
     sf::RectangleShape backgroundQuad;
     sf::Clock shaderClock;
+    sf::Texture asteroidTexture;
+    float spawnTimer = 0.f;
+    float spawnDelay = 2.f;
    
     float k;
 
@@ -47,4 +54,16 @@ public:
     void draw();
     void updateTime();
     void updateHud();
+    void spawnAsteroid(float minR, float maxR);
+    bool circleSegmentCollision(const sf::Vector2f& center,float radius, const sf::Vector2f& A, const sf::Vector2f& B);
+    bool circleTriangleCollision(const sf::Vector2f& center, float radius,
+                                const sf::Vector2f& A,
+                                const sf::Vector2f& B,
+                                const sf::Vector2f& C);
+    bool pointInTriangle(const sf::Vector2f& center,
+                                const sf::Vector2f& A,
+                                const sf::Vector2f& B,
+                                const sf::Vector2f& C);
+    float sign(const sf::Vector2f& p1,const sf::Vector2f& p2,const sf::Vector2f& p3);
 };
+
