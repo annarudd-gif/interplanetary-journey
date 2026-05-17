@@ -3,11 +3,13 @@
 #include <iostream>
 #include <random>
 #include <algorithm>
+#include"Asteroid.hpp"
+#include "Explosion.hpp"
 
 static std::mt19937 gen(std::random_device{}());
 
 RocketHud::RocketHud(sf::Font& font)
-    : speedText(font), engineText(font)   // создаем тексты сразу с font
+    : speedText(font), engineText(font)   
 {
     speedText.setCharacterSize(24);
     speedText.setFillColor(sf::Color::White);
@@ -20,19 +22,33 @@ RocketHud::RocketHud(sf::Font& font)
     barBackground.setSize({200.f, 16.f});
     barBackground.setFillColor(sf::Color(60, 60, 60));
 
-    barFill.setSize({0.f, 16.f});
+    barFill.setSize({200.f, 16.f});
+    barFill.setFillColor(sf::Color::White);
+}
+HPRocket::HPRocket(sf::Font& font):hp(font){
+    hp.setCharacterSize(24);
+    hp.setFillColor(sf::Color::White);
+    hp.setString("Rocket hp:");
+
+    barBackground.setSize({200.f,16.f});
+    barBackground.setFillColor(sf::Color(60,60,60));
+
+    barFill.setSize({200.f,16.f});
     barFill.setFillColor(sf::Color::White);
 }
 
 // ---------------- Game -----------------
 
 Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef)
-    : dt(dtRef),font(font), window(window), rocketStats(), rocketHud(font), player(window.getSize().x, window.getSize().y),
+    : dt(dtRef),font(font), window(window), rocketStats(), rocketHud(font),hpRocket(font),player(window.getSize().x, window.getSize().y),
       camera()
 {
     if(!asteroidTexture.loadFromFile("assets/textures/asteroid.png")){
         std::cout<<"<Failed to load asteroid texture\n";
 
+    }
+    if(!asteroid_sprite_sheet.loadFromFile("assets/textures/asteroid_sprite_sheet.png")){
+        std::cout<<"<Failed to load asteroid_sprite_sheet texture\n";
     }
     time = 0.f;
     camera.setSize({static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)});
@@ -41,6 +57,7 @@ Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef)
     initShader();
     initStats();
     initHud();
+    initHPRocket();
 }
 void Game::handleInput(const sf::Event& event,Screen& currentScreen){ 
     if(const auto* keyPressed=event.getIf<sf::Event::KeyPressed>()){ 
@@ -56,6 +73,7 @@ void Game::handleInput(const sf::Event& event,Screen& currentScreen){
 
 void Game::update()
 {
+   
     player.update(dt,window.getSize().y);
 
     spawnTimer+=dt;
@@ -69,23 +87,54 @@ void Game::update()
         sf::Vector2f B=player.getRocketPoint(1);
         sf::Vector2f C=player.getRocketPoint(2);
     for(auto& asteroid: asteroids){
+        
+
         asteroid.update(dt);
+
+        if(asteroid.isDead()){
+            continue;}
+
 
         sf::Vector2f center=asteroid.getPosition();
         float radius=asteroid.getRadius();
         
 
-        if(circleTriangleCollision(center,radius,A,B,C)){std::cout<<"hit"<<std::endl;}
+        if(circleTriangleCollision(center,radius,A,B,C)){
+            std::cout<<"hit"<<std::endl;
+        
+        asteroid.takeDamage(player.getCollisionDamage());
+
+        if(asteroid.isDead()){
+            explosions.emplace_back(asteroid_sprite_sheet,0.09f,asteroid.getPosition(),
+            asteroid.getRotation(),asteroid.getScale()*4.f,sf::Vector2i{128,128});}
+
+        if(asteroid.canHit()){
+            std::cout << "ROCKET DAMAGE\n";
+            player.takeDamage(asteroid.getCollisionDamage());
+            asteroid.resetHitCooldown();}
+
+        if(asteroid.isDead()){std::cout<<"dead"<<std::endl;}
+
+        }
+    }
+
+    for(auto& explosion:explosions){
+        explosion.update(dt);
     }
     
 
     asteroids.erase(std::remove_if(asteroids.begin(),asteroids.end(),[](Asteroid& a){
-        return a.isOffScreen();
+        return a.isOffScreen() || a.isDead();
     }),asteroids.end());
+    
+    explosions.erase(std::remove_if(explosions.begin(),explosions.end(),[](Explosion& a){
+        return a.isFinished();
+    }),explosions.end());
 
     camera.setCenter({player.getPosition().x, window.getSize().y / 2.f});
     updateTime();
     updateHud();
+    updateHPRocket();
 }
 
 void Game::draw()
@@ -103,11 +152,17 @@ void Game::draw()
     for(auto& asteroid:asteroids){
         asteroid.draw(window);
     }
+    for(auto& explosion:explosions){
+        explosion.draw(window);
+    }
     window.setView(window.getDefaultView());
     window.draw(rocketHud.speedText);
     window.draw(rocketHud.engineText);
     window.draw(rocketHud.barBackground);
     window.draw(rocketHud.barFill);
+    window.draw(hpRocket.hp);
+    window.draw(hpRocket.barBackground);
+    window.draw(hpRocket.barFill);
 }
 
 void Game::initShader()
@@ -135,6 +190,14 @@ void Game::initHud()
     rocketHud.barFill.setPosition({static_cast<float>(window.getSize().x)-280.f, margin+75.f});
 }
 
+void Game::initHPRocket(){
+    float margin=20.f;
+    hpRocket.hp.setPosition({margin,margin});
+    hpRocket.barBackground.setPosition({margin,margin+35.f});
+    hpRocket.barFill.setPosition({margin,margin+35.f});
+    
+}
+
 void Game::updateTime()
 {
     if(time < 1.f)
@@ -153,6 +216,12 @@ void Game::updateHud()
     rocketHud.speedText.setString("rocket speed: " + std::to_string(static_cast<int>(rocketStats.speed)));
     rocketHud.engineText.setString("Engine: " + rocketStats.engineState);
     rocketHud.barFill.setSize({static_cast<float>(std::round(rocketStats.boostRatio)), 16.f});
+}
+
+void Game::updateHPRocket(){
+    float percent =player.getHp() / player.getHpMax();
+    float width=200.f*percent;
+    hpRocket.barFill.setSize({width,16.f});
 }
 
 void Game::spawnAsteroid(float minR, float maxR){

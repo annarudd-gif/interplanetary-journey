@@ -28,6 +28,8 @@
         canBoost=true;
         boostMax=400.f;
         boostDecay=80.f;
+        hp=500.f;
+        hpMax=500.f;
         direction=sf::Vector2f(0.f,0.f);
         angle=0.f;
         direction.x=std::cos(rad(angle));
@@ -50,6 +52,7 @@
         
     }
     void Rocket::update(float dt, float worldHeight){
+        
         if(Up){
             angle-=rotationSpeed*dt;
         }
@@ -192,5 +195,22 @@
         if(num>=rocket.getPointCount()){return rocket.getPosition();}
         return rocket.getTransform().transformPoint(rocket.getPoint(num));
     }
+    float Rocket::getHp()const{return hp;}
+    void Rocket:: takeDamage(float damage){
+        hp-=damage;
+        if(hp<0.f){
+            hp=0.f;
+        }
+    }
+    float Rocket::getCollisionDamage()const{
+        return collisionDamage;
+    }
+    bool Rocket:: isDead()const{
+        return hp<=0.f;
+    }
+    float Rocket::getHpMax()const{
+        return hpMax;
+    }
+   
 
  

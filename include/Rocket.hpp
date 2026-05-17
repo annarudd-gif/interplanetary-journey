@@ -38,6 +38,9 @@ struct Rocket{
     bool Right;
     float angle;
     float rotationSpeed;
+    float hp;
+    float hpMax;
+    float collisionDamage=5.f;
     sf::ConvexShape rocket;
     Rocket(float startX, float startY);
     void draw(sf::RenderWindow& win);
@@ -49,6 +52,11 @@ struct Rocket{
     bool hasCooldownExpired(float& dt);
     bool updateOverheatTimer(float& dt);
     sf::Vector2f getRocketPoint(int num);
+    void takeDamage(float damage);
+    float getCollisionDamage()const;
+    bool isDead()const;
+    float getHpMax()const;
+    float getHp()const;
 
   
 };
