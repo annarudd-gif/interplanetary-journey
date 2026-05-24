@@ -5,6 +5,7 @@
 #include <string>
 #include "Asteroid.hpp"
 #include "Explosion.hpp"
+#include "Config.hpp"
 
 
 
@@ -34,6 +35,7 @@ struct HPRocket{
 
 class Game {
 private:
+    Config& config;
     std::vector<Asteroid> asteroids;
     std::vector<Explosion> explosions;
     float time;
@@ -49,7 +51,7 @@ private:
     sf::Texture asteroidTexture;
     sf::Texture asteroid_sprite_sheet;
     float spawnTimer = 0.f;
-    float spawnDelay = 0.5f;
+   
    
     float k;
 
@@ -57,7 +59,7 @@ private:
     sf::View camera;
 
 public:
-    Game(sf::RenderWindow& window, sf::Font& font, float& dtRef);
+    Game(sf::RenderWindow& window, sf::Font& font, float& dtRef,Config& config);
     void initShader();
     void initHud();
     void initStats();
@@ -65,6 +67,7 @@ public:
     void handleInput(const sf::Event& event, Screen& currentScreen);
     void update();
     void draw();
+    void reloadConfig();
     void updateTime();
     void updateHud();
     void updateHPRocket();

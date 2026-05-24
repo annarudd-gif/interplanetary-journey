@@ -4,8 +4,8 @@
 #include "Screen.hpp"
 
 Menu::Menu(sf::Font& font, float winX )
-: startButton(font, "Start Game", winX/ 2.f, 300.f),
-      settingsButton(font, "Settings", winX/ 2.f, 600.f){
+: startButton(font, "Start Game", {winX/2.f, 300.f},{800.f,200.f}, 64),
+      settingsButton(font, "Settings",{winX/2.f,600.f},{800.f,200.f}, 64){
 
 }
 

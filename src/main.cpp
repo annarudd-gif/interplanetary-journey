@@ -3,20 +3,15 @@
 #include <iostream>
 #include "Screen.hpp"
 #include "Game.hpp"
+#include "Settings.hpp"
+#include "Config.hpp"
 
 
-/*обробка подій налаштувань*/
-    void handleSettingsInput(const sf::Event& event, Screen& currentScreen){
-        if(const auto* keyPressed=event.getIf<sf::Event::KeyPressed>()){
-            if(keyPressed->code==sf::Keyboard::Key::Escape){
-                currentScreen=Screen::Menu;
-            }
-        }
-    };
+
 
 
 /*загальна обробка подій*/
-void processEvents(sf::RenderWindow& win,Screen& currentScreen,Menu& menu,Game& game){
+void processEvents(sf::RenderWindow& win,Screen& currentScreen,Menu& menu,Game& game,Settings& settings){
 /*Цикл обробки подій */
 while (const auto event = win.pollEvent()) {
     if (event->is<sf::Event::Closed>()) {
@@ -33,7 +28,7 @@ while (const auto event = win.pollEvent()) {
     }
 
     else if(currentScreen==Screen::Settings){
-        handleSettingsInput(*event,currentScreen);
+        settings.handleInput(*event,currentScreen);
     }
 }
 
@@ -44,6 +39,7 @@ int main() /*самий початок, назва та версія гри*/{
 
 
     std::cout << "Interplanetary Journey" << std::endl;
+   
     
 /*Стан екрану*/
     Screen currentScreen=Screen::Menu;
@@ -58,12 +54,15 @@ int main() /*самий початок, назва та версія гри*/{
     
  
 /*основні змінні*/
+    Config config;
+    config.load();
     float winX=mainWindow.getSize().x;
     float winY=mainWindow.getSize().y;
     sf::Clock clock;
     float dt;
     Menu menu(font,winX);
-    Game game (mainWindow, font,dt);
+    Game game (mainWindow, font,dt,config);
+    Settings settings(config, mainWindow, font);
     
    
 
@@ -71,7 +70,7 @@ int main() /*самий початок, назва та версія гри*/{
     while (mainWindow.isOpen()) {
         dt=clock.restart().asSeconds();
         /*метод обробки подій*/
-        processEvents(mainWindow,currentScreen,menu,game);
+        processEvents(mainWindow,currentScreen,menu,game,settings);
 
  /*Налаштування позицій та малювання наповнення вікна для меню*/
 if(currentScreen==Screen::Menu){
@@ -88,8 +87,15 @@ else if(currentScreen==Screen::Game){
     mainWindow.display();}
 /*Налаштування позицій та малювання наповнення вікна для налаштувань*/
 else if(currentScreen==Screen::Settings){
+    if(settings.getSettingsChanged()){
+        game.reloadConfig();
+        settings.setSettingsChanged(false);
+    }
+
     mainWindow.setView(mainWindow.getDefaultView());
+    settings.update(dt);
     mainWindow.clear(sf::Color(50,20,50));
+    settings.draw();
     mainWindow.display();}}
     return 0;
 }

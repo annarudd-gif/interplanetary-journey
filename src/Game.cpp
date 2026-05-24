@@ -39,10 +39,11 @@ HPRocket::HPRocket(sf::Font& font):hp(font){
 
 // ---------------- Game -----------------
 
-Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef)
-    : dt(dtRef),font(font), window(window), rocketStats(), rocketHud(font),hpRocket(font),player(window.getSize().x, window.getSize().y),
-      camera()
+Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef, Config& config)
+    : dt(dtRef),font(font), window(window), rocketStats(), rocketHud(font),hpRocket(font),player(window.getSize().x, window.getSize().y,config),
+      camera(),config(config)
 {
+    
     if(!asteroidTexture.loadFromFile("assets/textures/asteroid.png")){
         std::cout<<"<Failed to load asteroid texture\n";
 
@@ -77,10 +78,9 @@ void Game::update()
     player.update(dt,window.getSize().y);
 
     spawnTimer+=dt;
-    if(spawnTimer>= spawnDelay){
-        spawnTimer-=spawnDelay;
-        spawnAsteroid(20.f,50.f);
-        std::cout<<"spawned\n";
+    if(spawnTimer>= config.spawnDelay){
+        spawnTimer-=config.spawnDelay;
+        spawnAsteroid(config.minAstRadius,config.maxAstRadius);
 
     }
         sf::Vector2f A=player.getRocketPoint(0);
@@ -100,7 +100,6 @@ void Game::update()
         
 
         if(circleTriangleCollision(center,radius,A,B,C)){
-            std::cout<<"hit"<<std::endl;
         
         asteroid.takeDamage(player.getCollisionDamage());
 
@@ -285,3 +284,7 @@ if(circleSegmentCollision(center,radius,B,C))return true;
 if(circleSegmentCollision(center,radius,C,A))return true;
 if(pointInTriangle(center,A,B,C))return true;
 return false;}
+
+void Game::reloadConfig(){
+    player.reloadConfig();
+}

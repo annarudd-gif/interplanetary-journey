@@ -7,7 +7,7 @@ Asteroid::Asteroid(const sf::Texture& asteroidTexture, sf::Vector2f pos,float ra
 :asteroidSprite(asteroidTexture){
     this->radius=radius;
     this->speed=speed;
-    hp=radius;
+    hp=1.f;
     
 
     //hitbox
@@ -49,7 +49,7 @@ float Asteroid::getRadius()const{
     return hitBox.getRadius();
 }
 float Asteroid::getCollisionDamage()const{
-    return hp*0.5f;
+    return radius;
 }
 
  void Asteroid::takeDamage(float damage){

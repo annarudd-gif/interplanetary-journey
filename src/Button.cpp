@@ -1,18 +1,15 @@
 #include "Button.hpp"
 
-Button::Button(sf::Font& font, const std::string& text,float posX,float posY):label(font,text,64){
-        float bgX=800.f;
-        float bgY=200.f;
-
+Button::Button(sf::Font& font, const std::string& text,const sf::Vector2f pos, const sf::Vector2f size, int textSize):label(font,text,textSize){
     background.setFillColor(sf::Color(255, 105, 180)); 
-    background.setSize({bgX,bgY});
-    background.setOrigin({bgX/2,bgY/2});   
+    background.setSize(size);
+    background.setOrigin({size.x/2.f,size.y/2.f});   
     label.setFillColor(sf::Color::White);
     auto bounds=label.getLocalBounds();
-    label.setOrigin({bounds.position.x+bounds.size.x / 2,
-                     bounds.position.y+bounds.size.y / 2});
-    background.setPosition({posX,posY});
-    label.setPosition({posX,posY});
+    label.setOrigin({bounds.position.x+bounds.size.x / 2.f,
+                     bounds.position.y+bounds.size.y / 2.f});
+    background.setPosition(pos);
+    label.setPosition(pos);
 }
 bool Button::isMouseOver(const sf::Vector2f& mousePos)const{
 return background.getGlobalBounds().contains(mousePos);

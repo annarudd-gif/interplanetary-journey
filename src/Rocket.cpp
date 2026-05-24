@@ -1,10 +1,12 @@
 # include "Rocket.hpp"
 #include "cmath"
 #include <iostream>
-
+#include "Config.hpp"
   
       
-    Rocket::Rocket(float startX, float startY){
+    Rocket::Rocket(float startX, float startY,Config& config):config(config){
+        reloadConfig();
+
         if(!rocketTexture.loadFromFile("assets/textures/rocket.png")){
             std::cout<<"<Failed to load rocket texture\n";
         }
@@ -21,20 +23,12 @@
         Up=false;
         Down=false;
         Right=false;
-        
         currentBoost=0.f;
-        baseSpeed=200.f;
-        boostBuildRate=120.f;
         canBoost=true;
-        boostMax=400.f;
-        boostDecay=80.f;
-        hp=500.f;
-        hpMax=500.f;
         direction=sf::Vector2f(0.f,0.f);
         angle=0.f;
         direction.x=std::cos(rad(angle));
         direction.y=std::sin(rad(angle));
-        rotationSpeed=50.f;
         rocket.setPointCount(3);
         rocket.setFillColor(sf::Color::Yellow);
         rocket.setPoint(0,sf::Vector2f(0.f,0.f));
@@ -210,6 +204,20 @@
     }
     float Rocket::getHpMax()const{
         return hpMax;
+    }
+
+    void Rocket::reloadConfig(){
+        baseSpeed=config.baseSpeed;
+        boostBuildRate=config.boostBuildRate;
+        boostMax=config.boostMax;
+        baseSpeedDecay=config.baseSpeedDecay;
+        boostDecay=config.boostDecay;
+        hp=config.hpMax;
+        hpMax=config.hpMax;
+        boostDuration=config.boostDuration;
+        overheatSpeedDrop=config.overheatSpeedDrop;
+        timerCoolDown=config.timerCoolDown;
+        rotationSpeed=config.rotationSpeed;
     }
    
 

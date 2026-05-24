@@ -1,0 +1,25 @@
+{
+    "rocket":
+{
+    "baseSpeed":300,
+    "timerCoolDown":20,
+    "boostDuration":5,
+    "overheatSpeedDrop":40,
+    "baseSpeedDecay":20,
+    "boostBuildRate":120,
+    "boostMax":400,
+    "boostDecay":80,
+    "hpMax":500,
+    "rotationSpeed":50
+
+},
+"game":
+{
+    "spawnDelay":0.5,
+    "minAstRadius":30,
+    "maxAstRadius":60
+
+}
+
+
+}
