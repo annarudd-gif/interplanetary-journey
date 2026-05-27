@@ -15,8 +15,11 @@ this->frameSize=frameSize;
 frameCount=texture.getSize().x/frameSize.x;
 this->frameTime=frameTime;
 sprite.setTextureRect(sf::IntRect({0,0},frameSize));
-sprite.setOrigin({sprite.getLocalBounds().size.x/2.f
-    ,sprite.getLocalBounds().size.y/2.f});
+sprite.setOrigin(
+{
+    frameSize.x / 2.f,
+    frameSize.y / 2.f
+});
 sprite.setRotation(sf::degrees(rotation));
 sprite.setScale(scale);
 sprite.setPosition(position);

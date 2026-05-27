@@ -44,10 +44,10 @@ struct Rocket{
     float hpMax;
     float collisionDamage=5.f;
     sf::ConvexShape rocket;
-    Rocket(float startX, float startY,Config& Config);
+    Rocket(sf::Vector2f pos,Config& Config);
     void draw(sf::RenderWindow& win);
     float rad(float angle);
-    void update(float dt, float worldHeight);
+    void update(float dt, const sf::View& camera);
     std::string getEngineCondition();
     sf::Vector2f getPosition();
     float getSpeed();
@@ -60,6 +60,10 @@ struct Rocket{
     float getHpMax()const;
     float getHp()const;
     void reloadConfig();
+    bool isAlive()const;
+    float getRotation()const;
+    sf::Vector2f getScale()const;
+    void reSpawn(sf::Vector2f pos);
 
   
 };

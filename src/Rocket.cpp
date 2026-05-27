@@ -4,7 +4,7 @@
 #include "Config.hpp"
   
       
-    Rocket::Rocket(float startX, float startY,Config& config):config(config){
+    Rocket::Rocket(sf::Vector2f pos ,Config& config):config(config){
         reloadConfig();
 
         if(!rocketTexture.loadFromFile("assets/textures/rocket.png")){
@@ -36,7 +36,7 @@
         rocket.setPoint(2,sf::Vector2f(70.f,20.f));
         rocket.setOrigin(sf::Vector2f(35.f,20.f));
         rocket.setRotation(sf::degrees(angle));
-        rocket.setPosition(sf::Vector2f(startX/2.f,startY/2.f));
+        rocket.setPosition(pos);
         (*rocketSprite).setScale({0.5,0.5});
         (*rocketSprite).setPosition(rocket.getPosition());
     }
@@ -45,7 +45,7 @@
         if(rocketSprite){win.draw(*rocketSprite);}
         
     }
-    void Rocket::update(float dt, float worldHeight){
+    void Rocket::update(float dt, const sf::View& camera){
         
         if(Up){
             angle-=rotationSpeed*dt;
@@ -141,7 +141,7 @@
 
         sf::Vector2f pos=rocket.getPosition();
         float halfHeight=rocket.getGlobalBounds().size.y/2.f;
-        pos.y=std::clamp(pos.y,halfHeight,worldHeight-halfHeight);
+        pos.y=std::clamp(pos.y,halfHeight,camera.getSize().y-halfHeight);
         rocket.setPosition(pos);
         (*rocketSprite).setPosition(rocket.getPosition());
         (*rocketSprite).setRotation(rocket.getRotation());
@@ -166,7 +166,12 @@
         return "Unknown";
     }
     float Rocket::getSpeed(){
-    return baseSpeed+currentBoost;
+    if(!isAlive())
+    {
+        return 0.f;
+    }
+
+    return baseSpeed + currentBoost;
     }
     bool Rocket::hasCooldownExpired(float& dt){
         if(elapsedTime<timerCoolDown){
@@ -220,5 +225,42 @@
         rotationSpeed=config.rotationSpeed;
     }
    
+   
+
+   bool Rocket::isAlive()const
+{   
+    return hp > 0.f;
+}
+
+    float Rocket::getRotation()const{
+       return  rocket.getRotation().asDegrees();
+    }
+
+    sf::Vector2f Rocket::getScale()const{
+        return rocketSprite->getScale();
+    }
+
+    void Rocket::reSpawn(sf::Vector2f pos){
+        hp = hpMax;
+        status = StatusEngine::Normal;
+        lastStatus = status;
+        elapsedTime = 0.f;
+        overheatTime = 0.f;
+        currentBoost = 0.f;
+        Up = false;
+        Down = false;
+        Right = false;
+        angle = 0.f;
+        direction = {1.f ,0.f};
+        rocket.setPosition(pos);
+        rocket.setRotation(sf::degrees(angle));
+        rocketSprite->setPosition(rocket.getPosition());
+        rocketSprite->setRotation(rocket.getRotation());
+        rocketSprite->setTexture(rocketTexture);
+        canBoost = true;
+
+    }
+
+
 
  

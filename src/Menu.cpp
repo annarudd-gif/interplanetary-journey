@@ -3,9 +3,9 @@
 #include <iostream>
 #include "Screen.hpp"
 
-Menu::Menu(sf::Font& font, float winX )
-: startButton(font, "Start Game", {winX/2.f, 300.f},{800.f,200.f}, 64),
-      settingsButton(font, "Settings",{winX/2.f,600.f},{800.f,200.f}, 64){
+Menu::Menu(sf::Font& font)
+: startButton(font, "Start Game",{800.f,200.f}, 64),
+      settingsButton(font, "Settings",{800.f,200.f}, 64){
 
 }
 
@@ -29,6 +29,10 @@ Menu::Menu(sf::Font& font, float winX )
     };
 /*перевірка наведення миші на кнопки*/
     void Menu::update(sf::RenderWindow& win){
+        float centerX = win.getSize().x/2.f;
+        float centerY = win.getSize().y/2.f;
+        startButton.setButtonPosition(centerX,centerY-200.f);
+        settingsButton.setButtonPosition(centerX,centerY+200.f);
         startButton.transformButton(win);
         settingsButton.transformButton(win);
     };

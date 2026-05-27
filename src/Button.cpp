@@ -1,6 +1,6 @@
 #include "Button.hpp"
 
-Button::Button(sf::Font& font, const std::string& text,const sf::Vector2f pos, const sf::Vector2f size, int textSize):label(font,text,textSize){
+Button::Button(sf::Font& font, const std::string& text,const sf::Vector2f size, int textSize):label(font,text,textSize){
     background.setFillColor(sf::Color(255, 105, 180)); 
     background.setSize(size);
     background.setOrigin({size.x/2.f,size.y/2.f});   
@@ -8,8 +8,6 @@ Button::Button(sf::Font& font, const std::string& text,const sf::Vector2f pos, c
     auto bounds=label.getLocalBounds();
     label.setOrigin({bounds.position.x+bounds.size.x / 2.f,
                      bounds.position.y+bounds.size.y / 2.f});
-    background.setPosition(pos);
-    label.setPosition(pos);
 }
 bool Button::isMouseOver(const sf::Vector2f& mousePos)const{
 return background.getGlobalBounds().contains(mousePos);
@@ -34,3 +32,5 @@ else{background.setFillColor(sf::Color(255, 105, 180));
     label.setScale({1.f,1.f});}
 
 }
+
+

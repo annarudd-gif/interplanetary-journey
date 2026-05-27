@@ -39,9 +39,9 @@ HPRocket::HPRocket(sf::Font& font):hp(font){
 
 // ---------------- Game -----------------
 
-Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef, Config& config)
-    : dt(dtRef),font(font), window(window), rocketStats(), rocketHud(font),hpRocket(font),player(window.getSize().x, window.getSize().y,config),
-      camera(),config(config)
+Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef, Config& config, sf::View& cameraUi)
+    : dt(dtRef),font(font), window(window), rocketStats(), rocketHud(font),hpRocket(font),player({window.getSize().x/2.f, window.getSize().y/2.f},config),
+      camera(),config(config),cameraUi(cameraUi)
 {
     
     if(!asteroidTexture.loadFromFile("assets/textures/asteroid.png")){
@@ -51,31 +51,45 @@ Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef, Config& confi
     if(!asteroid_sprite_sheet.loadFromFile("assets/textures/asteroid_sprite_sheet.png")){
         std::cout<<"<Failed to load asteroid_sprite_sheet texture\n";
     }
+    if(!rocket_sprite_sheet.loadFromFile("assets/textures/rocket-sprite-sheet.png")){
+        std::cout<<"<Failed to load rocket_sprite_sheet texture\n";
+    }
+
     time = 0.f;
-    camera.setSize({static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)});
-    camera.setCenter({static_cast<float>(window.getSize().x)/2.f, static_cast<float>(window.getSize().y)/2.f});
+    camera.setSize({1920.f,1080.f});
+    camera.setCenter({960.f,540.f});
+
+   
 
     initShader();
     initStats();
-    initHud();
-    initHPRocket();
+    setPositionHud();
+    setPositionHPRocket();
 }
 void Game::handleInput(const sf::Event& event,Screen& currentScreen){ 
     if(const auto* keyPressed=event.getIf<sf::Event::KeyPressed>()){ 
-        if(keyPressed->code==sf::Keyboard::Key::Escape){ currentScreen=Screen::Menu; } 
+        if(keyPressed->code==sf::Keyboard::Key::Escape){ currentScreen=Screen::Menu; }
+        
+
+        
+    if(player.isAlive()){
         if(keyPressed->code==sf::Keyboard::Key::W||keyPressed->code==sf::Keyboard::Key::Up){ player.Up=true; } 
         if(keyPressed->code==sf::Keyboard::Key::S||keyPressed->code==sf::Keyboard::Key::Down){ player.Down=true; } 
-        if(keyPressed->code==sf::Keyboard::Key::D||keyPressed->code==sf::Keyboard::Key::Right){ player.Right=true; } } 
+        if(keyPressed->code==sf::Keyboard::Key::D||keyPressed->code==sf::Keyboard::Key::Right){ player.Right=true; } } }
+
+
+
+    if(player.isAlive()){
         if(const auto* KeyReleased=event.getIf<sf::Event::KeyReleased>()){ 
-            if(KeyReleased->code==sf::Keyboard::Key::W||KeyReleased->code==sf::Keyboard::Key::Up){ player.Up=false; } 
-            if(KeyReleased->code==sf::Keyboard::Key::S||KeyReleased->code==sf::Keyboard::Key::Down){ player.Down=false; } 
-            if(KeyReleased->code==sf::Keyboard::Key::D||KeyReleased->code==sf::Keyboard::Key::Right){ player.Right=false; } } 
+        if(KeyReleased->code==sf::Keyboard::Key::W||KeyReleased->code==sf::Keyboard::Key::Up){ player.Up=false; } 
+        if(KeyReleased->code==sf::Keyboard::Key::S||KeyReleased->code==sf::Keyboard::Key::Down){ player.Down=false; } 
+        if(KeyReleased->code==sf::Keyboard::Key::D||KeyReleased->code==sf::Keyboard::Key::Right){ player.Right=false; } }}
         }
 
 void Game::update()
 {
-   
-    player.update(dt,window.getSize().y);
+   if(player.isAlive()){
+    player.update(dt, camera);}
 
     spawnTimer+=dt;
     if(spawnTimer>= config.spawnDelay){
@@ -98,6 +112,7 @@ void Game::update()
         sf::Vector2f center=asteroid.getPosition();
         float radius=asteroid.getRadius();
         
+            if(player.isAlive()){
 
         if(circleTriangleCollision(center,radius,A,B,C)){
         
@@ -112,10 +127,29 @@ void Game::update()
             player.takeDamage(asteroid.getCollisionDamage());
             asteroid.resetHitCooldown();}
 
+            
+
         if(asteroid.isDead()){std::cout<<"dead"<<std::endl;}
 
-        }
+        }}
     }
+
+
+    if(!player.isAlive() &&
+   !deathHandled)
+{
+    std::cout << "EXPLOSION SPAWN\n";
+    explosions.emplace_back(
+        rocket_sprite_sheet,
+        0.08f,
+        player.getPosition(),
+        player.getRotation(),
+        player.getScale()*3.f,
+        sf::Vector2i{128,128}
+    );
+
+    deathHandled = true;
+}
 
     for(auto& explosion:explosions){
         explosion.update(dt);
@@ -130,7 +164,7 @@ void Game::update()
         return a.isFinished();
     }),explosions.end());
 
-    camera.setCenter({player.getPosition().x, window.getSize().y / 2.f});
+    camera.setCenter({player.getPosition().x, 540.f});
     updateTime();
     updateHud();
     updateHPRocket();
@@ -143,18 +177,22 @@ void Game::draw()
     starShader.setUniform("u_resolution", sf::Glsl::Vec2(window.getSize().x, window.getSize().y));
     starShader.setUniform("offset", sf::Glsl::Vec2(player.getPosition().x, 0.f));
 
-    window.setView(window.getDefaultView());
+    window.setView(cameraUi);
     window.draw(backgroundQuad, &starShader);
 
     window.setView(camera);
-    player.draw(window);
+    if(player.isAlive()){
+    player.draw(window);}
     for(auto& asteroid:asteroids){
         asteroid.draw(window);
     }
     for(auto& explosion:explosions){
         explosion.draw(window);
+
+   
     }
-    window.setView(window.getDefaultView());
+
+     window.setView(cameraUi);
     window.draw(rocketHud.speedText);
     window.draw(rocketHud.engineText);
     window.draw(rocketHud.barBackground);
@@ -162,6 +200,8 @@ void Game::draw()
     window.draw(hpRocket.hp);
     window.draw(hpRocket.barBackground);
     window.draw(hpRocket.barFill);
+
+    
 }
 
 void Game::initShader()
@@ -180,7 +220,7 @@ void Game::initStats()
     rocketStats.boostRatio = player.currentBoost / k;
 }
 
-void Game::initHud()
+void Game::setPositionHud()
 {
     float margin = 20.f;
     rocketHud.speedText.setPosition({static_cast<float>(window.getSize().x)-280.f, margin});
@@ -189,7 +229,7 @@ void Game::initHud()
     rocketHud.barFill.setPosition({static_cast<float>(window.getSize().x)-280.f, margin+75.f});
 }
 
-void Game::initHPRocket(){
+void Game::setPositionHPRocket(){
     float margin=20.f;
     hpRocket.hp.setPosition({margin,margin});
     hpRocket.barBackground.setPosition({margin,margin+35.f});
@@ -210,8 +250,7 @@ void Game::updateTime()
     rocketStats.boostRatio = player.currentBoost / k;
 }
 
-void Game::updateHud()
-{
+void Game::updateHud(){
     rocketHud.speedText.setString("rocket speed: " + std::to_string(static_cast<int>(rocketStats.speed)));
     rocketHud.engineText.setString("Engine: " + rocketStats.engineState);
     rocketHud.barFill.setSize({static_cast<float>(std::round(rocketStats.boostRatio)), 16.f});
@@ -288,3 +327,13 @@ return false;}
 void Game::reloadConfig(){
     player.reloadConfig();
 }
+
+void Game::reStart(){
+    spawnTimer = 0.f;
+    player.reSpawn({window.getSize().x/2.f,window.getSize().y/2.f});
+    asteroids.clear();
+    explosions.clear();
+    deathHandled = false;
+}
+
+

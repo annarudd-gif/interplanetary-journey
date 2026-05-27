@@ -38,6 +38,7 @@ private:
     Config& config;
     std::vector<Asteroid> asteroids;
     std::vector<Explosion> explosions;
+    bool deathHandled=false;
     float time;
     float& dt;
     sf::Font& font;
@@ -50,6 +51,7 @@ private:
     sf::Clock shaderClock;
     sf::Texture asteroidTexture;
     sf::Texture asteroid_sprite_sheet;
+    sf::Texture rocket_sprite_sheet;
     float spawnTimer = 0.f;
    
    
@@ -57,13 +59,15 @@ private:
 
     Rocket player;
     sf::View camera;
+     sf::View& cameraUi;
+   
 
 public:
-    Game(sf::RenderWindow& window, sf::Font& font, float& dtRef,Config& config);
+    Game(sf::RenderWindow& window, sf::Font& font, float& dtRef,Config& config, sf::View& cameraUi);
     void initShader();
-    void initHud();
+    void setPositionHud();
     void initStats();
-    void initHPRocket();
+    void setPositionHPRocket();
     void handleInput(const sf::Event& event, Screen& currentScreen);
     void update();
     void draw();
@@ -82,5 +86,7 @@ public:
                                 const sf::Vector2f& B,
                                 const sf::Vector2f& C);
     float sign(const sf::Vector2f& p1,const sf::Vector2f& p2,const sf::Vector2f& p3);
+    void reStart();
+    
 };
 

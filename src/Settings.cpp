@@ -50,8 +50,8 @@ items[selectedIndex].valueText.setString(ss.str());
         }
     };
 
-    Settings::Settings(Config& config, sf::RenderWindow& win,sf::Font& font):config(config),win(win),font(font),
-    saveButton(font,"Save",{win.getSize().x-170.f,win.getSize().y-70.f},{300.f,100.f},32){
+    Settings::Settings(Config& config, sf::RenderWindow& win,sf::Font& font,sf::View& cameraUi):config(config),win(win),font(font),
+    saveButton(font,"Save",{300.f,100.f},32), cameraUi(cameraUi){
 
         if(!green.loadFromFile("assets/textures/green_box.png")){
         std::cout<<"<Failed to load green_box texture\n";
@@ -61,6 +61,7 @@ items[selectedIndex].valueText.setString(ss.str());
         }
 
         init();
+        saveButton.setButtonPosition(win.getSize().x-170.f,win.getSize().y-70.f);
 
     }
 
@@ -118,10 +119,12 @@ items[selectedIndex].valueText.setString(ss.str());
 }
 
 void Settings::update(float dt){
+    
     for(size_t i=0; i<items.size(); i++){
         if(items[i].tempValue != items[i].oriiginalValue)
         {items[i].box.setTexture(red);
         items[i].modified=true;}
+        else{ items[i].box.setTexture(green);}
 
     }
     saveButton.transformButton(win);
@@ -129,6 +132,8 @@ void Settings::update(float dt){
 
 void Settings::draw()
 {
+    
+    win.setView(cameraUi);
     for(size_t i = 0; i < items.size(); i++)
     {
         

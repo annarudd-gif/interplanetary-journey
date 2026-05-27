@@ -8,8 +8,9 @@ class Menu
 private:
     Button startButton;
     Button settingsButton;
+
 public:
-Menu(sf::Font& font, float winX);
+Menu(sf::Font& font);
     void handleInput(const sf::Event& event,sf::RenderWindow& win, Screen& currentScreen);
     void update(sf::RenderWindow& win);
     void draw(sf::RenderWindow& win);

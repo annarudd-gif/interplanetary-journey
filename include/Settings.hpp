@@ -28,6 +28,8 @@ private:
     sf::Texture red;
     int selectedIndex = 0;
 
+    sf::View& cameraUi;
+
     struct SettingItem
 {
     std::string name;
@@ -74,7 +76,7 @@ private:
 };
 std::vector<SettingItem> items;
 public:
-Settings(Config& config, sf::RenderWindow& win,sf::Font& font);
+Settings(Config& config, sf::RenderWindow& win,sf::Font& font, sf::View& cameraUi);
 void init();
 void handleInput(const sf::Event& event, Screen& currentScreen);
 void update(float dt);
