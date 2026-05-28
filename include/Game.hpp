@@ -6,6 +6,7 @@
 #include "Asteroid.hpp"
 #include "Explosion.hpp"
 #include "Config.hpp"
+#include "Button.hpp"
 
 
 
@@ -39,8 +40,10 @@ private:
     std::vector<Asteroid> asteroids;
     std::vector<Explosion> explosions;
     bool deathHandled=false;
+    bool paused=false;
     float time;
     float& dt;
+    std::optional<IconButton> pause;
     sf::Font& font;
     sf::RenderWindow& window;
     RocketStats rocketStats;
@@ -49,6 +52,8 @@ private:
     sf::Shader starShader;
     sf::RectangleShape backgroundQuad;
     sf::Clock shaderClock;
+    sf::Texture playButtonTex;
+    sf::Texture pauseButtonTex;
     sf::Texture asteroidTexture;
     sf::Texture asteroid_sprite_sheet;
     sf::Texture rocket_sprite_sheet;

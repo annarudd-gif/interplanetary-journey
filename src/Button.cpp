@@ -34,3 +34,43 @@ else{background.setFillColor(sf::Color(255, 105, 180));
 }
 
 
+IconButton::IconButton(sf::Texture& tex,float scale):spriteIconButton(tex){
+    spriteIconButton.setScale({scale,scale});
+    auto bounds=spriteIconButton.getLocalBounds();
+    spriteIconButton.setOrigin({bounds.size.x/2.f,bounds.size.y/2.f});
+
+}
+
+bool IconButton::isMouseOver(const sf::Vector2f& mousePos)const{
+return spriteIconButton.getGlobalBounds().contains(mousePos);
+}
+
+void IconButton::setButtonPosition(float x, float y){
+    spriteIconButton.setPosition({x,y});
+}
+
+void IconButton::drawButton(sf::RenderWindow& win){
+    win.draw(spriteIconButton);
+}
+
+void IconButton::transformButton(sf::RenderWindow& win){
+    sf::Vector2f mouseGloalPos=win.mapPixelToCoords(sf::Mouse::getPosition(win));
+if(isMouseOver(mouseGloalPos)){
+    spriteIconButton.setScale({1.05f,1.05f});
+}
+else{
+    spriteIconButton.setScale({1.f,1.f});
+
+}}
+
+void IconButton::setTexture(const sf::Texture& tex){
+    spriteIconButton.setTexture(tex);
+}
+
+void IconButton::setPosition(sf::Vector2f pos){
+    spriteIconButton.setPosition(pos);
+}
+
+
+
+

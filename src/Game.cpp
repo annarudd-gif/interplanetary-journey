@@ -5,6 +5,7 @@
 #include <algorithm>
 #include"Asteroid.hpp"
 #include "Explosion.hpp"
+#include <optional>
 
 static std::mt19937 gen(std::random_device{}());
 
@@ -54,7 +55,15 @@ Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef, Config& confi
     if(!rocket_sprite_sheet.loadFromFile("assets/textures/rocket-sprite-sheet.png")){
         std::cout<<"<Failed to load rocket_sprite_sheet texture\n";
     }
+    if(!pauseButtonTex.loadFromFile("assets/textures/pause.png")){
+        std::cout<<"<Failed to load pause texture\n";
+    }
+    if(!playButtonTex.loadFromFile("assets/textures/play.png")){
+        std::cout<<"<Failed to load play texture\n";
+    }
 
+    pause.emplace(playButtonTex,0.1f);
+    pause->setPosition(sf::Vector2f({80.f ,cameraUi.getSize().y - 80.f}));
     time = 0.f;
     camera.setSize({1920.f,1080.f});
     camera.setCenter({960.f,540.f});
@@ -75,7 +84,8 @@ void Game::handleInput(const sf::Event& event,Screen& currentScreen){
     if(player.isAlive()){
         if(keyPressed->code==sf::Keyboard::Key::W||keyPressed->code==sf::Keyboard::Key::Up){ player.Up=true; } 
         if(keyPressed->code==sf::Keyboard::Key::S||keyPressed->code==sf::Keyboard::Key::Down){ player.Down=true; } 
-        if(keyPressed->code==sf::Keyboard::Key::D||keyPressed->code==sf::Keyboard::Key::Right){ player.Right=true; } } }
+        if(keyPressed->code==sf::Keyboard::Key::D||keyPressed->code==sf::Keyboard::Key::Right){ player.Right=true; }
+        if(keyPressed->code==sf::Keyboard::Key::Space){paused = !paused;} } }
 
 
 
@@ -88,6 +98,13 @@ void Game::handleInput(const sf::Event& event,Screen& currentScreen){
 
 void Game::update()
 {
+    if(paused){
+        pause->setTexture(pauseButtonTex);
+        return;}
+    else{pause->setTexture(playButtonTex);}
+
+    std::vector<Explosion> pendingExplosions;
+
    if(player.isAlive()){
     player.update(dt, camera);}
 
@@ -119,7 +136,7 @@ void Game::update()
         asteroid.takeDamage(player.getCollisionDamage());
 
         if(asteroid.isDead()){
-            explosions.emplace_back(asteroid_sprite_sheet,0.09f,asteroid.getPosition(),
+            pendingExplosions.emplace_back(asteroid_sprite_sheet,0.09f,asteroid.getPosition(),
             asteroid.getRotation(),asteroid.getScale()*4.f,sf::Vector2i{128,128});}
 
         if(asteroid.canHit()){
@@ -134,12 +151,14 @@ void Game::update()
         }}
     }
 
+   
+
 
     if(!player.isAlive() &&
    !deathHandled)
 {
     std::cout << "EXPLOSION SPAWN\n";
-    explosions.emplace_back(
+    pendingExplosions.emplace_back(
         rocket_sprite_sheet,
         0.08f,
         player.getPosition(),
@@ -150,6 +169,11 @@ void Game::update()
 
     deathHandled = true;
 }
+
+     for(auto& explosion : pendingExplosions){
+        explosions.emplace_back(std::move(explosion));
+
+    }
 
     for(auto& explosion:explosions){
         explosion.update(dt);
@@ -200,6 +224,7 @@ void Game::draw()
     window.draw(hpRocket.hp);
     window.draw(hpRocket.barBackground);
     window.draw(hpRocket.barFill);
+    pause->drawButton(window);
 
     
 }
