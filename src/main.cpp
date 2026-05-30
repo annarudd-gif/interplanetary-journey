@@ -105,7 +105,11 @@ if(currentScreen==Screen::Menu){
     mainWindow.display();}
 /*Налаштування позицій та малювання наповнення вікна для гри*/
 else if(currentScreen==Screen::Game){
-
+    if(game.hasGameOverTimerExpired()){
+         std::cout << "GO MENU\n";
+             game.reStart();
+        currentScreen=Screen::Menu;}
+    else{
     if(currentScreen == Screen::Game &&
    previousScreen != Screen::Game)
 {
@@ -115,7 +119,7 @@ else if(currentScreen==Screen::Game){
     game.update();
     mainWindow.clear(sf::Color(10,20,50));
     game.draw();
-    mainWindow.display();}
+    mainWindow.display();}}
 /*Налаштування позицій та малювання наповнення вікна для налаштувань*/
 else if(currentScreen==Screen::Settings){
     if(settings.getSettingsChanged()){

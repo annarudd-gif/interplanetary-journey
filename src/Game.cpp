@@ -42,7 +42,7 @@ HPRocket::HPRocket(sf::Font& font):hp(font){
 
 Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef, Config& config, sf::View& cameraUi)
     : dt(dtRef),font(font), window(window), rocketStats(), rocketHud(font),hpRocket(font),player({window.getSize().x/2.f, window.getSize().y/2.f},config),
-      camera(),config(config),cameraUi(cameraUi)
+      camera(),config(config),cameraUi(cameraUi),gameover(font),restart(font,"Restart",{300.f, 100.f},24)
 {
     
     if(!asteroidTexture.loadFromFile("assets/textures/asteroid.png")){
@@ -62,14 +62,17 @@ Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef, Config& confi
         std::cout<<"<Failed to load play texture\n";
     }
 
-    pause.emplace(playButtonTex,0.1f);
+    pause.emplace(playButtonTex,0.35f);
     pause->setPosition(sf::Vector2f({80.f ,cameraUi.getSize().y - 80.f}));
+
+    
+
     time = 0.f;
     camera.setSize({1920.f,1080.f});
     camera.setCenter({960.f,540.f});
 
    
-
+    initGameOver();
     initShader();
     initStats();
     setPositionHud();
@@ -85,7 +88,8 @@ void Game::handleInput(const sf::Event& event,Screen& currentScreen){
         if(keyPressed->code==sf::Keyboard::Key::W||keyPressed->code==sf::Keyboard::Key::Up){ player.Up=true; } 
         if(keyPressed->code==sf::Keyboard::Key::S||keyPressed->code==sf::Keyboard::Key::Down){ player.Down=true; } 
         if(keyPressed->code==sf::Keyboard::Key::D||keyPressed->code==sf::Keyboard::Key::Right){ player.Right=true; }
-        if(keyPressed->code==sf::Keyboard::Key::Space){paused = !paused;} } }
+        if(keyPressed->code==sf::Keyboard::Key::Space){paused = !paused;} }}
+        
 
 
 
@@ -94,7 +98,16 @@ void Game::handleInput(const sf::Event& event,Screen& currentScreen){
         if(KeyReleased->code==sf::Keyboard::Key::W||KeyReleased->code==sf::Keyboard::Key::Up){ player.Up=false; } 
         if(KeyReleased->code==sf::Keyboard::Key::S||KeyReleased->code==sf::Keyboard::Key::Down){ player.Down=false; } 
         if(KeyReleased->code==sf::Keyboard::Key::D||KeyReleased->code==sf::Keyboard::Key::Right){ player.Right=false; } }}
+        
+    if(const auto* mousePressed=event.getIf<sf::Event::MouseButtonPressed>()){
+        sf::Vector2f mousePos=window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        if(mousePressed->button==sf::Mouse::Button::Left){
+            if(gameOver && restart.isMouseOver(mousePos)){
+                reStart();
+                
+            }
         }
+    }}
 
 void Game::update()
 {
@@ -154,11 +167,12 @@ void Game::update()
    
 
 
-    if(!player.isAlive() &&
+   if(!player.isAlive() &&
    !deathHandled)
 {
-    std::cout << "EXPLOSION SPAWN\n";
-    pendingExplosions.emplace_back(
+    playerDead = true;
+
+    rocketExplosion.emplace(
         rocket_sprite_sheet,
         0.08f,
         player.getPosition(),
@@ -170,6 +184,8 @@ void Game::update()
     deathHandled = true;
 }
 
+
+
      for(auto& explosion : pendingExplosions){
         explosions.emplace_back(std::move(explosion));
 
@@ -179,6 +195,10 @@ void Game::update()
         explosion.update(dt);
     }
     
+     if(rocketExplosion)
+{
+    rocketExplosion->update(dt);
+}
 
     asteroids.erase(std::remove_if(asteroids.begin(),asteroids.end(),[](Asteroid& a){
         return a.isOffScreen() || a.isDead();
@@ -188,10 +208,26 @@ void Game::update()
         return a.isFinished();
     }),explosions.end());
 
+
+
+   
+ if(playerDead &&
+   rocketExplosion &&
+   rocketExplosion->isFinished())
+{
+    rocketExplosion.reset();
+    gameOver = true;
+}
+
+
+   
     camera.setCenter({player.getPosition().x, 540.f});
     updateTime();
     updateHud();
     updateHPRocket();
+    if(gameOver){
+        updateGameOver();
+    }
 }
 
 void Game::draw()
@@ -216,7 +252,14 @@ void Game::draw()
    
     }
 
+    if(rocketExplosion)
+{
+    rocketExplosion->draw(window);
+}
+
      window.setView(cameraUi);
+     if(gameOver){drawGameOver(window);}
+     else{
     window.draw(rocketHud.speedText);
     window.draw(rocketHud.engineText);
     window.draw(rocketHud.barBackground);
@@ -224,7 +267,7 @@ void Game::draw()
     window.draw(hpRocket.hp);
     window.draw(hpRocket.barBackground);
     window.draw(hpRocket.barFill);
-    pause->drawButton(window);
+    pause->drawButton(window);}
 
     
 }
@@ -354,11 +397,60 @@ void Game::reloadConfig(){
 }
 
 void Game::reStart(){
+    playerDead = false;
+    gameOverTimer=gameOverMaxTimer;
+    gameOver=false;
+    fill.setSize({background.getSize().x,background.getSize().y});
     spawnTimer = 0.f;
     player.reSpawn({window.getSize().x/2.f,window.getSize().y/2.f});
     asteroids.clear();
     explosions.clear();
+    rocketExplosion.reset();
     deathHandled = false;
 }
 
+void Game::initGameOver(){
+    gameover.setString("Game Over");
+    gameover.setCharacterSize(96);
+    auto bounds = gameover.getLocalBounds();
+
+    gameover.setOrigin({bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f});
+    gameover.setPosition({cameraUi.getSize().x/2.f,cameraUi.getSize().y/2.f-80.f});
+
+    background.setFillColor(sf::Color(60, 60, 60));
+    background.setSize({bounds.size.x,20.f});
+    background.setOrigin({background.getSize().x/2.f,background.getSize().y/2.f});
+    background.setPosition({gameover.getPosition().x,gameover.getPosition().y + 50.f});
+
+    fill.setFillColor(sf::Color::White);
+    fill.setSize({background.getSize().x,20.f});
+    fill.setPosition({background.getPosition().x - background.getSize().x/2.f,background.getPosition().y - background.getSize().y/2.f});
+
+    restart.setButtonPosition(background.getPosition().x,background.getPosition().y+100.f);
+}
+
+void Game::updateGameOver(){
+    
+    gameOverTimer-=dt;
+
+    if(gameOverTimer < 0.f)
+{
+    gameOverTimer = 0.f;
+}
+
+    
+    fill.setSize({background.getSize().x*(gameOverTimer/gameOverMaxTimer),20.f});
+    
+}
+
+bool Game::hasGameOverTimerExpired() const{
+    return gameOverTimer<=0.f;   
+}
+
+void Game::drawGameOver(sf::RenderWindow& win){
+    win.draw(gameover);
+    win.draw(background);
+    win.draw(fill);
+    restart.drawButton(win);
+}
 

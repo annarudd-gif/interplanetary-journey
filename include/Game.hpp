@@ -7,6 +7,7 @@
 #include "Explosion.hpp"
 #include "Config.hpp"
 #include "Button.hpp"
+#include <optional>
 
 
 
@@ -36,13 +37,22 @@ struct HPRocket{
 
 class Game {
 private:
+
     Config& config;
     std::vector<Asteroid> asteroids;
     std::vector<Explosion> explosions;
+    std::optional<Explosion> rocketExplosion;
     bool deathHandled=false;
     bool paused=false;
+    bool gameOver = false;
+    bool playerDead = false;
     float time;
     float& dt;
+    sf::Text gameover;
+    sf::RectangleShape background;
+    sf::RectangleShape fill;
+    Button restart;
+    
     std::optional<IconButton> pause;
     sf::Font& font;
     sf::RenderWindow& window;
@@ -58,6 +68,8 @@ private:
     sf::Texture asteroid_sprite_sheet;
     sf::Texture rocket_sprite_sheet;
     float spawnTimer = 0.f;
+    float gameOverTimer = 10.f;
+    float gameOverMaxTimer = 10.f;
    
    
     float k;
@@ -69,6 +81,10 @@ private:
 
 public:
     Game(sf::RenderWindow& window, sf::Font& font, float& dtRef,Config& config, sf::View& cameraUi);
+    bool hasGameOverTimerExpired() const;
+    void initGameOver();
+    void updateGameOver();
+    void drawGameOver(sf::RenderWindow& win);
     void initShader();
     void setPositionHud();
     void initStats();
