@@ -106,7 +106,6 @@ if(currentScreen==Screen::Menu){
 /*Налаштування позицій та малювання наповнення вікна для гри*/
 else if(currentScreen==Screen::Game){
     if(game.hasGameOverTimerExpired()){
-         std::cout << "GO MENU\n";
              game.reStart();
         currentScreen=Screen::Menu;}
     else{

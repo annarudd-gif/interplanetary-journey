@@ -7,6 +7,11 @@ Menu::Menu(sf::Font& font)
 : startButton(font, "Start Game",{800.f,200.f}, 64),
       settingsButton(font, "Settings",{800.f,200.f}, 64){
 
+        if(!buttonBuffer.loadFromFile("assets/sound/button_sound.wav")){
+            std::cout << "Failed to load button sound\n";
+        }
+        else{buttonSound.emplace(buttonBuffer);}
+
 }
 
 
@@ -16,11 +21,11 @@ Menu::Menu(sf::Font& font)
             if(mousePressed->button==sf::Mouse::Button::Left){
                 sf::Vector2f mousePos=win.mapPixelToCoords(mousePressed->position);
                 if(startButton.isMouseOver(mousePos)){
-                    std::cout<<"Start button clicked"<<std::endl;
+                    if(buttonSound){buttonSound->play();}
                     currentScreen=Screen::Game;
                 }
                 else if(settingsButton.isMouseOver(mousePos)){
-                    std::cout<<"Settings button clicked"<<std::endl;
+                    if(buttonSound){buttonSound->play();}
                     currentScreen=Screen::Settings;
                 }
             }

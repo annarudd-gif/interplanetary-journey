@@ -1,13 +1,18 @@
 # pragma once
-# include<SFML/Graphics.hpp>
+# include <SFML/Graphics.hpp>
+# include <SFML/Audio.hpp>
 # include "Button.hpp"
-#include "Screen.hpp"
+# include "Screen.hpp"
+# include <optional>
 
 class Menu
 {
 private:
     Button startButton;
     Button settingsButton;
+
+    sf::SoundBuffer buttonBuffer;
+    std::optional<sf::Sound> buttonSound;
 
 public:
 Menu(sf::Font& font);

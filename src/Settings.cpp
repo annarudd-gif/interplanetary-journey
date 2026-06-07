@@ -44,6 +44,7 @@ items[selectedIndex].valueText.setString(ss.str());
                 sf::Vector2f mousePos = win.mapPixelToCoords(sf::Mouse::getPosition(win));
 
                 if(saveButton.isMouseOver(mousePos)){
+                    buttonSound->play();
                     saveSettings();
                 }
             }
@@ -59,6 +60,10 @@ items[selectedIndex].valueText.setString(ss.str());
          if(!red.loadFromFile("assets/textures/red_box.png")){
         std::cout<<"<Failed to load red_box texture\n";
         }
+        if(!buttonBuffer.loadFromFile("assets/sound/button_sound.wav")){
+        std::cout<<"<Failed to load button_sound.wav\n";
+        }
+        else{buttonSound.emplace(buttonBuffer);}
 
         init();
         saveButton.setButtonPosition(win.getSize().x-170.f,win.getSize().y-70.f);

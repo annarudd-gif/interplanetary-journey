@@ -1,11 +1,13 @@
 #pragma once
 #include "Config.hpp"
 #include "SFML/Graphics.hpp"
+#include "SFML/Audio.hpp"
 #include "Screen.hpp"
 #include "string"
 #include <sstream>
 #include <iomanip>
 #include "Button.hpp"
+#include "optional"
 
 
 enum class Category{
@@ -19,6 +21,8 @@ Asteroid
 class Settings
 {
 private:
+    sf::SoundBuffer buttonBuffer;
+    std::optional <sf::Sound> buttonSound;
     bool settingsChanged = false;
     Config& config;
     sf::RenderWindow& win;

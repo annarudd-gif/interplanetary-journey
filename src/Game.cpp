@@ -61,6 +61,18 @@ Game::Game(sf::RenderWindow& window, sf::Font& font, float& dtRef, Config& confi
     if(!playButtonTex.loadFromFile("assets/textures/play.png")){
         std::cout<<"<Failed to load play texture\n";
     }
+    if(!Explosion_buffer.loadFromFile("assets/sound/rock-explosion.wav")){
+        std::cout<<"<Failed to load rock-explosion \n";
+    }
+    else{rock_explosion.emplace(Explosion_buffer);
+    rock_explosion->setVolume(50.f);}
+    if(!music.openFromFile("assets/sound/music.wav")){
+         std::cout<<"<Failed to open music\n";
+    }
+    else{
+        music.setLooping(true);
+        music.play();
+    }
 
     pause.emplace(playButtonTex,0.35f);
     pause->setPosition(sf::Vector2f({80.f ,cameraUi.getSize().y - 80.f}));
@@ -153,13 +165,8 @@ void Game::update()
             asteroid.getRotation(),asteroid.getScale()*4.f,sf::Vector2i{128,128});}
 
         if(asteroid.canHit()){
-            std::cout << "ROCKET DAMAGE\n";
             player.takeDamage(asteroid.getCollisionDamage());
             asteroid.resetHitCooldown();}
-
-            
-
-        if(asteroid.isDead()){std::cout<<"dead"<<std::endl;}
 
         }}
     }
@@ -171,6 +178,8 @@ void Game::update()
    !deathHandled)
 {
     playerDead = true;
+    if(rock_explosion){
+    rock_explosion->play();}
 
     rocketExplosion.emplace(
         rocket_sprite_sheet,

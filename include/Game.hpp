@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "Screen.hpp"
 #include "Rocket.hpp"
 #include <string>
@@ -38,6 +39,9 @@ struct HPRocket{
 class Game {
 private:
 
+    sf::Music music;
+    sf::SoundBuffer Explosion_buffer;
+    std::optional <sf::Sound> rock_explosion;
     Config& config;
     std::vector<Asteroid> asteroids;
     std::vector<Explosion> explosions;
